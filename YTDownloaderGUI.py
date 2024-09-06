@@ -4,6 +4,24 @@ import yt_dlp
 import os
 import subprocess
 
+def get_ffmpeg_path():
+    # Path to the current executable or script
+    base_path = os.path.dirname(os.path.abspath(__file__))
+
+    # FFmpeg binary path within the dist folder
+    ffmpeg_path = os.path.join(base_path, 'ffmpeg', 'bin', 'ffmpeg.exe')
+
+    if os.path.isfile(ffmpeg_path):
+        return ffmpeg_path
+    else:
+        raise FileNotFoundError("FFmpeg binary not found.")
+
+# Use the ffmpeg path in your code
+ffmpeg_path = get_ffmpeg_path()
+
+# Example: subprocess call using ffmpeg to check the version
+subprocess.run([ffmpeg_path, '-version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
 # Function to check if ffmpeg is installed
 def check_ffmpeg_installed():
     ffmpeg_path = os.path.join(os.path.dirname(__file__), 'ffmpeg', 'bin', 'ffmpeg.exe')
@@ -21,6 +39,28 @@ def check_ffmpeg_installed():
     else:
         print("FFmpeg executable not found.")
         return False
+    
+def add_ffmpeg_to_path():
+    # Path to the directory containing this script/executable
+    base_path = os.path.dirname(os.path.abspath(__file__))
+
+    # Path to the ffmpeg/bin directory
+    ffmpeg_bin_path = os.path.join(base_path, 'ffmpeg', 'bin')
+
+    # Add the ffmpeg/bin directory to the PATH environment variable
+    os.environ['PATH'] += os.pathsep + ffmpeg_bin_path
+
+    # Check if ffmpeg is now in the PATH
+    try:
+        subprocess.run(['ffmpeg', '-version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print("FFmpeg is successfully added to PATH and working.")
+    except FileNotFoundError:
+        raise FileNotFoundError("FFmpeg could not be found in the system PATH. Ensure it's correctly bundled.")
+
+# Call the function to ensure ffmpeg is available
+add_ffmpeg_to_path()
+
+subprocess.run(['ffmpeg', '-i', 'input.mp4', 'output.mp4'])
 
 # Function to download video or audio
 def download_video(url, download_type, quality, progress_var):
@@ -84,7 +124,7 @@ def start_download():
     progress_var.set(0)  # Reset progress bar
     download_video(url, download_type, quality, progress_var)
 
-# Creating the UI
+# UI
 root = tk.Tk()
 root.title("YouTube Downloader")
 root.geometry("500x400")  # Adjusted window size
